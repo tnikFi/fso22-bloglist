@@ -3,8 +3,9 @@ const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
 const blogRouter = require('./controllers/blogs')
+const config = require('./utils/config')
 
-const MONGODB_URI = process.env.MONGODB_URI
+const MONGODB_URI = config.MONGODB_URI
 mongoose.connect(MONGODB_URI)
 
 app.use(cors())
