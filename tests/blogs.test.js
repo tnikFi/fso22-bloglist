@@ -17,6 +17,10 @@ describe('/api/blogs', () => {
         expect(response.status).toBe(200)
         expect(response.headers['content-type']).toMatch(/application\/json/)
         expect(response.body).toHaveLength((await helper.blogsInDb()).length)
+        
+        if (response.body.length) {
+            expect(response.body[0].id).toBeDefined()
+        }
     })
 })
 
