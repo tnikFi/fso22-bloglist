@@ -1,9 +1,10 @@
+const config = require('./utils/config')
 const express = require('express')
+require('express-async-errors')
 const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
 const blogRouter = require('./controllers/blogs')
-const config = require('./utils/config')
 const {unknownEndpoint, errorHandler} = require('./utils/middleware')
 
 const MONGODB_URI = config.MONGODB_URI
