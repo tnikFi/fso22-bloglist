@@ -51,8 +51,14 @@ const blogsInDb = async () => {
     return blogs.map(blog => blog.toJSON())
 }
 
+const getRandomEntryId = async () => {
+    const blogs = await blogsInDb()
+    return blogs[Math.round(Math.random()*(blogs.length-1))].id
+}
+
 module.exports = {
     initialData,
     setInitialState,
-    blogsInDb
+    blogsInDb,
+    getRandomEntryId
 }

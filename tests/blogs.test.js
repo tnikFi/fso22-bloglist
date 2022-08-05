@@ -24,8 +24,7 @@ describe('when there are blogs in the database', () => {
     })
 
     test('GET /:id returns a single blog', async () => {
-        const blogs = await helper.blogsInDb()
-        const id = blogs[Math.round(Math.random()*(blogs.length-1))].id
+        const id = await helper.getRandomEntryId()
         const response = await api.get(`/api/blogs/${id}`)
         expect(response.status).toBe(200)
         expect(response.body.id).toBeDefined()
@@ -91,19 +90,43 @@ describe('when there are blogs in the database', () => {
 
     describe('deleting a blog', () => {
         test('with a valid id returns status 204', async () => {
-            const blogs = await helper.blogsInDb()
-            const id = blogs[Math.round(Math.random()*(blogs.length-1))].id
+            const id = await helper.getRandomEntryId()
             const response = await api.delete(`/api/blogs/${id}`)
             expect(response.status).toBe(204)
         })
 
         test('with a valid id removes the entry', async () => {
-            const blogs = await helper.blogsInDb()
-            const id = blogs[Math.round(Math.random()*(blogs.length-1))].id
+            const id = await helper.getRandomEntryId()
             console.log('deleting id', id);
             await api.delete(`/api/blogs/${id}`)
             const afterDelete = await helper.blogsInDb()
             expect(afterDelete).toHaveLength(helper.initialData.length - 1)
+        })
+    })
+
+    describe('editing', () => {
+        test('an existing blog works', async () => {
+            const id = await helper.getRandomEntryId()
+            const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
+            const response = await api.put(`/api/blogs/${id}`).send(newData)
+            expect(response.status).toBe(200)
+            expect(response.body).toMatchObject(newData)
+
+            const verifyResponse = await api.get(`/api/blogs/${id}`)
+            expect(verifyResponse.body).toMatchObject(response.body)
+        }),
+
+        test('with an invalid id returns status 400', async () => {
+            const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
+            const response = await api.put(`/api/blogs/a`).send(newData)
+            expect(response.status).toBe(400)
+        })
+
+        test('with invalid data returns status 400', async () => {
+            const id = await helper.getRandomEntryId()
+            const newData = {title: null}
+            const response = await api.put(`/api/blogs/${id}`).send(newData)
+            expect(response.status).toBe(400)
         })
     })
 })
