@@ -69,7 +69,25 @@ describe('when there are blogs in the database', () => {
                 expect(noUrlResponse.status).toBe(400)
             })
         })
-    })    
+    })
+
+    describe('deleting a blog', () => {
+        test('with a valid id returns status 204', async () => {
+            const blogs = await helper.blogsInDb()
+            const id = blogs[Math.round(Math.random()*(blogs.length-1))].id
+            const response = await api.delete(`/api/blogs/${id}`)
+            expect(response.status).toBe(204)
+        })
+
+        test('with a valid id removes the entry', async () => {
+            const blogs = await helper.blogsInDb()
+            const id = blogs[Math.round(Math.random()*(blogs.length-1))].id
+            console.log('deleting id', id);
+            await api.delete(`/api/blogs/${id}`)
+            const afterDelete = await helper.blogsInDb()
+            expect(afterDelete).toHaveLength(helper.initialData.length - 1)
+        })
+    })
 })
 
 afterAll(() => {
