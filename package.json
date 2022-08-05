@@ -1,0 +1,31 @@
+{
+  "name": "fso22-bloglist",
+  "version": "1.0.0",
+  "description": "My solution to the Full Stack Open bloglist exercise",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tnikFi/fso22-bloglist.git"
+  },
+  "author": "tnikFi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tnikFi/fso22-bloglist/issues"
+  },
+  "homepage": "https://github.com/tnikFi/fso22-bloglist#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "mongoose": "^6.5.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.21.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "nodemon": "^2.0.19"
+  }
+}
