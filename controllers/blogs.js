@@ -6,6 +6,11 @@ blogRouter.get('/', async (request, response) => {
     response.json(blogs)
 })
 
+blogRouter.get('/:id', async (request, response) => {
+    const blog = await Blog.findById(request.params.id)
+    return blog ? response.json(blog) : response.status(404).end()
+})
+
 blogRouter.post('/', async (request, response) => {
     const blog = new Blog(request.body)
     const result = await blog.save()

@@ -11,7 +11,7 @@ beforeEach(async () => {
 })
 
 describe('when there are blogs in the database', () => {
-    test('GET returns all blogs as JSON', async () => {
+    test('GET / returns all blogs as JSON', async () => {
         const response = await api.get('/api/blogs')
 
         expect(response.status).toBe(200)
@@ -21,6 +21,24 @@ describe('when there are blogs in the database', () => {
         if (response.body.length) {
             expect(response.body[0].id).toBeDefined()
         }
+    })
+
+    test('GET /:id returns a single blog', async () => {
+        const blogs = await helper.blogsInDb()
+        const id = blogs[Math.round(Math.random()*(blogs.length-1))].id
+        const response = await api.get(`/api/blogs/${id}`)
+        expect(response.status).toBe(200)
+        expect(response.body.id).toBeDefined()
+    })
+
+    test('GET with an unused but valid id returns status 404', async () => {
+        const response = await api.get(`/api/blogs/000000000000`)
+        expect(response.status).toBe(404)
+    })
+
+    test('GET with invalid id returns status 400', async () => {
+        const response = await api.get(`/api/blogs/a`)
+        expect(response.status).toBe(400)
     })
 
     describe('adding a blog to the database', () => {
