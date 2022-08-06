@@ -32,13 +32,4 @@ describe('when the users database is empty', () => {
             expect(users.length).toBe(helper.initialData.length + 1)
         })
     })
-
-    describe('getting user info', () => {
-        test('will not return sensitive info', async () => {
-            const userData = {username: 'user123', name: 'Account Owner', password: 'password!'}
-            await api.post('/api/users').send(userData)
-            const testUser = await helper.getUsers()[0]
-            expect(testUser.passwordHash).not.toBeDefined()
-        })
-    })
 })
