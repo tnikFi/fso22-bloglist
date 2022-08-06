@@ -32,6 +32,23 @@ describe('when the users database has users in it', () => {
             expect(users.length).toBe(helper.initialData.length + 1)
         })
     })
+
+    describe.only('getting users', () => {
+        test('returns array of all users', async () => {
+            const response = await api.get('/api/users')
+            expect(response.status).toBe(200)
+            expect(response.headers['content-type']).toMatch(/application\/json/)
+            expect(response.body.length).toBe(helper.initialData.length)
+            expect(response.body[0].username).toBeDefined()
+            expect(response.body[0].name).toBeDefined()
+            expect(response.body[0].id).toBeDefined()
+        })
+        
+        test('does not return password hashes', async () => {
+            const response = await api.get('/api/users')
+            expect(response.body[0].passwordHash).not.toBeDefined()
+        })
+    })
 })
 
 afterAll(() => {
