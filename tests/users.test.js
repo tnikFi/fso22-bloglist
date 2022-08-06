@@ -10,7 +10,7 @@ beforeEach(async () => {
 })
 
 describe('when the users database has users in it', () => {
-    describe('creating a user', () => {
+    describe.only('creating a user', () => {
         test('returns the new user object', async () => {
             const userData = {username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}
             const response = await api.post('/api/users').send(userData)
@@ -31,9 +31,27 @@ describe('when the users database has users in it', () => {
             const users = await helper.getUsers()
             expect(users.length).toBe(helper.initialData.length + 1)
         })
+
+        test('fails if username is too short', async () => {
+            const userData = {username: 'aa', name: 'Jest Test', password: 'mypasswordisthis'}
+            const response = await api.post('/api/users').send(userData)
+            expect(response.status).toBe(400)
+        })
+
+        test('fails if password is too short', async () => {
+            const userData = {username: 'test_user', name: 'Jest Test', password: 'aa'}
+            const response = await api.post('/api/users').send(userData)
+            expect(response.status).toBe(400)
+        })
+
+        test('fails if username is taken', async () => {
+            const userData = {username: 'admin', name: 'Jest Test', password: 'mypasswordisthis'}
+            const response = await api.post('/api/users').send(userData)
+            expect(response.status).toBe(400)
+        })
     })
 
-    describe.only('getting users', () => {
+    describe('getting users', () => {
         test('returns array of all users', async () => {
             const response = await api.get('/api/users')
             expect(response.status).toBe(200)
