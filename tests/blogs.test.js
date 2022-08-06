@@ -70,7 +70,7 @@ describe('when there are blogs in the database', () => {
             expect(response.body.user.id).toBeDefined()
             expect(response.body.user.name).toBeDefined()
             expect(response.body.user.username).toBeDefined()
-            expect(response.body.user.password).not.toBeDefined()
+            expect(response.body.user.passwordHash).not.toBeDefined()
         })
 
         describe('without', () => {
@@ -120,10 +120,12 @@ describe('when there are blogs in the database', () => {
             const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
             const response = await api.put(`/api/blogs/${id}`).send(newData)
             expect(response.status).toBe(200)
-            expect(response.body).toMatchObject(newData)
+            expect(response.body.title).toBe(newData.title)
+            expect(response.body.author).toBe(newData.author)
+            expect(response.body.url).toBe(newData.url)
 
             const verifyResponse = await api.get(`/api/blogs/${id}`)
-            expect(verifyResponse.body).toMatchObject(response.body)
+            expect(verifyResponse.body.title).toBe(response.body.title)
         }),
 
         test('with an invalid id returns status 400', async () => {
