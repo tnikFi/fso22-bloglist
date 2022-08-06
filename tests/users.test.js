@@ -36,6 +36,7 @@ describe('when the users database has users in it', () => {
             const userData = {username: 'aa', name: 'Jest Test', password: 'mypasswordisthis'}
             const response = await api.post('/api/users').send(userData)
             expect(response.status).toBe(400)
+            expect(response.body.error).toBe('username must be 3 characters or longer')
 
             const users = await helper.getUsers()
             expect(users.length).toBe(helper.initialData.length)
@@ -45,6 +46,7 @@ describe('when the users database has users in it', () => {
             const userData = {username: 'test_user', name: 'Jest Test', password: 'aa'}
             const response = await api.post('/api/users').send(userData)
             expect(response.status).toBe(400)
+            expect(response.body.error).toBe('password must be 3 characters or longer')
 
             const users = await helper.getUsers()
             expect(users.length).toBe(helper.initialData.length)
@@ -54,6 +56,7 @@ describe('when the users database has users in it', () => {
             const userData = {username: 'admin', name: 'Jest Test', password: 'mypasswordisthis'}
             const response = await api.post('/api/users').send(userData)
             expect(response.status).toBe(400)
+            expect(response.body.error).toBe('username must be unique')
 
             const users = await helper.getUsers()
             expect(users.length).toBe(helper.initialData.length)
