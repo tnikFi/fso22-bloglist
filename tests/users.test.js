@@ -9,27 +9,31 @@ beforeEach(async () => {
     await helper.setInitialState()
 })
 
-describe('when the users database is empty', () => {
+describe('when the users database has users in it', () => {
     describe('creating a user', () => {
         test('returns the new user object', async () => {
-            const userData = {username: 'user123', name: 'Account Owner', password: 'password!'}
+            const userData = {username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}
             const response = await api.post('/api/users').send(userData)
             expect(response.status).toBe(201)
             expect(response.body.id).toBeDefined()
         })
 
         test('will not return sensitive info', async () => {
-            const userData = {username: 'user123', name: 'Account Owner', password: 'password!'}
+            const userData = {username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}
             const response = await api.post('/api/users').send(userData)
             expect(response.body.passwordHash).not.toBeDefined()
             expect(response.body.password).not.toBeDefined()
         })
 
         test('adds the user to the database', async () => {
-            const userData = {username: 'user123', name: 'Account Owner', password: 'password!'}
+            const userData = {username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}
             await api.post('/api/users').send(userData)
             const users = await helper.getUsers()
             expect(users.length).toBe(helper.initialData.length + 1)
         })
     })
+})
+
+afterAll(() => {
+    mongoose.connection.close()
 })
