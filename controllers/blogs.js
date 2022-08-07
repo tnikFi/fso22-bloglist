@@ -16,6 +16,7 @@ blogRouter.post('/', async (request, response) => {
     const user = await User.findOne({})
     const blog = new Blog({...request.body, user})
     const result = await blog.save()
+    await user.update({blogs: user.blogs ? [...user.blogs, blog] : [blog]})
     response.status(201).json(result)
 })
 
