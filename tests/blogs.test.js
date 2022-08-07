@@ -73,6 +73,16 @@ describe('when there are blogs in the database', () => {
             expect(response.body.user.passwordHash).not.toBeDefined()
         })
 
+        test.only('will attach the blog to the user data', async () => {
+            const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
+            const response = await api.post('/api/blogs').send(newBlog)
+            const user = await api.get(`/api/users/${response.body.user.id}`)
+            console.log(user.body);
+            expect(user.body.blogs).toBeDefined()
+            expect(user.body.blogs.id).toBeDefined()
+            expect(user.body.blogs.id).toBe(response.body.id)
+        })
+
         describe('without', () => {
             test('likes defaults to 0 likes', async () => {
                 const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}

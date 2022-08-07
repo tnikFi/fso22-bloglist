@@ -73,6 +73,11 @@ describe('when the users database has users in it', () => {
             expect(response.body[0].name).toBeDefined()
             expect(response.body[0].id).toBeDefined()
         })
+
+        test.only('also contains the blogs added by each user', async () => {
+            const response = await api.get('/api/users')
+            expect(response.body[0].blogs).toBeDefined()
+        })
         
         test('does not return password hashes', async () => {
             const response = await api.get('/api/users')

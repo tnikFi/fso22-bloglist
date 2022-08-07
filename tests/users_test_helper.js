@@ -6,6 +6,7 @@ const initialData = [
         username: "user123",
         name: "Account Owner",
         passwordHash: "$2b$10$HkLYXe7TofHQDyRYrc3FueZPP9aS1QNDhe7W4i3TVHnTewDLxrkAS",
+        blogs: [],
         __v: 0
     },
     {
@@ -13,6 +14,7 @@ const initialData = [
         username: "admin",
         name: "John Doe",
         passwordHash: "$2b$10$HkLYXe7TofHQDyRYrc3FueZPP9aS1QNDhe7W4i3TVHnTewDLxrkAS",
+        blogs: [],
         __v: 0
     },
 ]
