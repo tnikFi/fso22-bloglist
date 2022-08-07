@@ -79,8 +79,8 @@ describe('when there are blogs in the database', () => {
             const user = await api.get(`/api/users/${response.body.user.id}`)
             console.log(user.body);
             expect(user.body.blogs).toBeDefined()
-            expect(user.body.blogs.id).toBeDefined()
-            expect(user.body.blogs.id).toBe(response.body.id)
+            expect(user.body.blogs[0].id).toBeDefined()
+            expect(user.body.blogs[0].id).toBe(response.body.id)
         })
 
         describe('without', () => {
