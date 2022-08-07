@@ -84,6 +84,43 @@ describe('when the users database has users in it', () => {
             expect(response.body[0].passwordHash).not.toBeDefined()
         })
     })
+
+    describe.only('logging in', () => {
+        test('without a username fails', async () => {
+            const login = {password: 'password'}
+            const response = await api.post('/api/login')
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('incorrect username or password')
+        })
+
+        test('without a password fails', async () => {
+            const login = {username: 'admin'}
+            const response = await api.post('/api/login')
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('incorrect username or password')
+        })
+
+        test('with an incorrect password fails', async () => {
+            const login = {username: 'admin', password: 'incorrect'}
+            const response = await api.post('/api/login')
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('incorrect username or password')
+        })
+
+        test('with an incorrect username fails', async () => {
+            const login = {username: 'notarealuser', password: 'password'}
+            const response = await api.post('/api/login')
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('incorrect username or password')
+        })
+
+        test('with correct info returns token', async () => {
+            const login = {username: 'admin', password: 'password'}
+            const response = await api.post('/api/login')
+            expect(response.status).toBe(200)
+            expect(response.body.token).toBeDefined()
+        })
+    })
 })
 
 afterAll(() => {
