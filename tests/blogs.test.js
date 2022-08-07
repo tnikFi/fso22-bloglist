@@ -41,6 +41,14 @@ describe('when there are blogs in the database', () => {
     })
 
     describe('adding a blog to the database', () => {
+        test('requires a token', async () => {
+            const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
+            
+            const response = await api.post('/api/blogs').send(newBlog)
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('')
+        })
+
         test('increments the total blog count by 1', async () => {
             const likes = Math.round(Math.random()*20)
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example', likes: likes}
