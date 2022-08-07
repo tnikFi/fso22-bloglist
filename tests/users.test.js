@@ -85,38 +85,39 @@ describe('when the users database has users in it', () => {
         })
     })
 
-    describe.only('logging in', () => {
+    describe('logging in', () => {
         test('without a username fails', async () => {
             const login = {password: 'password'}
-            const response = await api.post('/api/login')
+            const response = await api.post('/api/login').send(login)
             expect(response.status).toBe(401)
-            expect(response.body.error).toBe('incorrect username or password')
+            expect(response.body.error).toBe('invalid username or password')
         })
 
         test('without a password fails', async () => {
             const login = {username: 'admin'}
-            const response = await api.post('/api/login')
+            const response = await api.post('/api/login').send(login)
             expect(response.status).toBe(401)
-            expect(response.body.error).toBe('incorrect username or password')
+            expect(response.body.error).toBe('invalid username or password')
         })
 
         test('with an incorrect password fails', async () => {
             const login = {username: 'admin', password: 'incorrect'}
-            const response = await api.post('/api/login')
+            const response = await api.post('/api/login').send(login)
             expect(response.status).toBe(401)
-            expect(response.body.error).toBe('incorrect username or password')
+            expect(response.body.error).toBe('invalid username or password')
         })
 
         test('with an incorrect username fails', async () => {
             const login = {username: 'notarealuser', password: 'password'}
-            const response = await api.post('/api/login')
+            const response = await api.post('/api/login').send(login)
             expect(response.status).toBe(401)
-            expect(response.body.error).toBe('incorrect username or password')
+            expect(response.body.error).toBe('invalid username or password')
         })
 
         test('with correct info returns token', async () => {
-            const login = {username: 'admin', password: 'password'}
-            const response = await api.post('/api/login')
+            const login = {username: 'test123', name: 'Jest Test', password: 'password'}
+            await api.post('/api/users').send(login)
+            const response = await api.post('/api/login').send(login)
             expect(response.status).toBe(200)
             expect(response.body.token).toBeDefined()
         })
