@@ -73,11 +73,10 @@ describe('when there are blogs in the database', () => {
             expect(response.body.user.passwordHash).not.toBeDefined()
         })
 
-        test.only('will attach the blog to the user data', async () => {
+        test('will attach the blog to the user data', async () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
             const response = await api.post('/api/blogs').send(newBlog)
             const user = await api.get(`/api/users/${response.body.user.id}`)
-            console.log(user.body);
             expect(user.body.blogs).toBeDefined()
             expect(user.body.blogs[0].id).toBeDefined()
             expect(user.body.blogs[0].id).toBe(response.body.id)
@@ -117,7 +116,6 @@ describe('when there are blogs in the database', () => {
 
         test('with a valid id removes the entry', async () => {
             const id = await helper.getRandomEntryId()
-            console.log('deleting id', id);
             await api.delete(`/api/blogs/${id}`)
             const afterDelete = await helper.blogsInDb()
             expect(afterDelete).toHaveLength(helper.initialData.length - 1)

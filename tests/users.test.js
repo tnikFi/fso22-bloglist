@@ -74,7 +74,7 @@ describe('when the users database has users in it', () => {
             expect(response.body[0].id).toBeDefined()
         })
 
-        test.only('also contains the blogs added by each user', async () => {
+        test('also contains the blogs added by each user', async () => {
             const response = await api.get('/api/users')
             expect(response.body[0].blogs).toBeDefined()
         })
