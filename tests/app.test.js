@@ -131,35 +131,37 @@ describe('when there are blogs in the database', () => {
     })
 
     describe('deleting a blog', () => {
-        test.only('without a token returns 401', async () => {
+        test('without a token returns 401', async () => {
             const login = await createTestUser()
             const blog = await createTestBlog(null, login.token)
             const response = await api.delete(`/api/blogs/${blog.body.id}`)
             expect(response.status).toBe(401)
-            expect(response.body.error).toBe('invalid token')
+            expect(response.body.error).toBe('token missing or invalid')
         })
 
-        test.only('with a valid token returns status 204', async () => {
+        test('with a valid token returns status 204', async () => {
             const login = await createTestUser()
             const blog = await createTestBlog(undefined, login.token)
-            const response = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send()
+            const response = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`)
             expect(response.status).toBe(204)
+            
         })
 
-        test.only('twice returns 204, then 404', async () => {
+        test('twice returns 204, then 404', async () => {
             const login = await createTestUser()
             const blog = await createTestBlog(undefined, login.token)
-            const response1 = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send()
+            const response1 = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`)
             expect(response1.status).toBe(204)
-            const response2 = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send()
+            const response2 = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`)
             expect(response2.status).toBe(404)
         })
 
         test('with a valid id removes the entry', async () => {
-            const id = await blogsHelper.getRandomEntryId()
-            await api.delete(`/api/blogs/${id}`)
+            const login = await createTestUser()
+            const blog = await createTestBlog(undefined, login.token)
+            await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`)
             const afterDelete = await blogsHelper.blogsInDb()
-            expect(afterDelete).toHaveLength(blogsHelper.initialData.length - 1)
+            expect(afterDelete).toHaveLength(blogsHelper.initialData.length)
         })
     })
 

@@ -15,12 +15,10 @@ blogRouter.get('/:id', async (request, response) => {
 })
 
 blogRouter.post('/', async (request, response) => {
-    const token = jwt.verify(request.token, config.SECRET)
+    // If there is no token, return 401
+    if (!request.user) return response.status(401).json({error: 'token missing or invalid'})
 
-    // If there is no token or the verified token has no id, return 401
-    if (!request.token || !token.id) return response.status(401).json({error: 'token missing or invalid'})
-
-    const user = await User.findById(token.id)
+    const user = request.user
     const blog = new Blog({...request.body, user})
     const result = await blog.save()
     await user.update({blogs: user.blogs ? [...user.blogs, blog] : [blog]})
@@ -34,15 +32,8 @@ blogRouter.put('/:id', async (request, response) => {
 })
 
 blogRouter.delete('/:id', async (request, response) => {
-    const token = jwt.verify(request.token, config.SECRET)
-
-    console.log('token verified');
-    console.log(token);
-
-    // If there is no token or the verified token has no id, return 401
-    if (!request.token || !token.id) return response.status(401).json({error: 'token missing or invalid'})
-
-    console.log('finding blog');
+    // If there is no token, return 401
+    if (!request.user) return response.status(401).json({error: 'token missing or invalid'})
 
     const blog = await Blog.findById(request.params.id)
 
@@ -51,10 +42,8 @@ blogRouter.delete('/:id', async (request, response) => {
 
     console.log('blog found');
 
-    console.log(blog.user.toString(), token.id);
-
     // If the user id does not match the user id in the blog entry, don't allow deletion
-    if (!(blog.user.toString() === token.id)) return response.status(401).json({error: 'token missing or invalid'})
+    if (!(blog.user.toString() === request.user.id.toString())) return response.status(401).json({error: 'token missing or invalid'})
 
     await blog.delete()
 
