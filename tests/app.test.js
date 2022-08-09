@@ -74,7 +74,7 @@ describe('when there are blogs in the database', () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example', likes: likes}
             
             const login = await createTestUser()
-            const response = await createTestBlog(newBlog, login.token)
+            await createTestBlog(newBlog, login.token)
     
             const getResponse = await api.get('/api/blogs')
             expect(getResponse.body).toHaveLength(blogsHelper.initialData.length + 1)
