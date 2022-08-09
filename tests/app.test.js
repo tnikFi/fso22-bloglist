@@ -12,8 +12,7 @@ beforeEach(async () => {
     await usersHelper.setInitialState()
 })
 
-const createTestUser = async () => {
-    const userData = {username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}
+const createTestUser = async (userData={username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}) => {
     await api.post('/api/users').send(userData)
     const response = await api.post('/api/login').send(userData)
     const token = response.body.token
@@ -64,12 +63,18 @@ describe('when there are blogs in the database', () => {
             expect(response.body.error).toBe('invalid token')
         })
 
+        test('with a token works', async () => {
+            const login = await createTestUser()
+            const response = await createTestBlog(undefined, login.token)
+            expect(response.status).toBe(201)
+        })
+
         test('increments the total blog count by 1', async () => {
             const likes = Math.round(Math.random()*20)
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example', likes: likes}
             
-            const response = await createTestBlog(newBlog, null)
-            expect(response.status).toBe(201)
+            const login = await createTestUser()
+            const response = await createTestBlog(newBlog, login.token)
     
             const getResponse = await api.get('/api/blogs')
             expect(getResponse.body).toHaveLength(blogsHelper.initialData.length + 1)
@@ -80,7 +85,8 @@ describe('when there are blogs in the database', () => {
             const likes = Math.round(Math.random()*20)
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example', likes: likes}
             
-            const response = await createTestBlog(newBlog, null)
+            const login = await createTestUser()
+            const response = await createTestBlog(newBlog, login.token)
             expect(response.body.title).toBe(newBlog.title)
             expect(response.body.url).toBe(newBlog.url)
             expect(response.body.likes).toBe(likes)
@@ -88,7 +94,8 @@ describe('when there are blogs in the database', () => {
 
         test('will attach user info to the blog', async () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
-            const response = await createTestBlog(newBlog, null)
+            const login = await createTestUser()
+            const response = await createTestBlog(newBlog, login.token)
             expect(response.body.user).toBeDefined()
             expect(response.body.user.id).toBeDefined()
             expect(response.body.user.name).toBeDefined()
@@ -98,7 +105,8 @@ describe('when there are blogs in the database', () => {
 
         test('will attach the blog to the user data', async () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
-            const response = await createTestBlog(newBlog, null)
+            const login = await createTestUser()
+            const response = await createTestBlog(newBlog, login.token)
             const user = await api.get(`/api/users/${response.body.user.id}`)
             expect(user.body.blogs).toBeDefined()
             expect(user.body.blogs[0].id).toBeDefined()
@@ -109,7 +117,8 @@ describe('when there are blogs in the database', () => {
             test('likes defaults to 0 likes', async () => {
                 const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
         
-                const response = await createTestBlog(newBlog, null)
+                const login = await createTestUser()
+                const response = await createTestBlog(newBlog, login.token)
                 expect(response.body.likes).toBeDefined()
                 expect(response.body.likes).toBe(0)
             })
@@ -119,9 +128,11 @@ describe('when there are blogs in the database', () => {
                 const noName = {url: 'http://www.historyoftesting.example'}
                 const noUrl = {title: 'The History of Testing'}
                 
-                const emptyResponse = await api.post('/api/blogs').send(empty)
-                const noNameResponse = await api.post('/api/blogs').send(noName)
-                const noUrlResponse = await api.post('/api/blogs').send(noUrl)
+                const login = await createTestUser()
+                
+                const emptyResponse = await createTestBlog(empty, login.token)
+                const noNameResponse = await createTestBlog(noName, login.token)
+                const noUrlResponse = await createTestBlog(noUrl, login.token)
                 
                 expect(emptyResponse.status).toBe(400)
                 expect(noNameResponse.status).toBe(400)
@@ -166,29 +177,54 @@ describe('when there are blogs in the database', () => {
     })
 
     describe('editing', () => {
-        test('an existing blog works', async () => {
-            const id = await blogsHelper.getRandomEntryId()
+        test('without a token returns 401', async () => {
+            const login = await createTestUser()
+            const blog = await createTestBlog(undefined, login.token)
             const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
-            const response = await api.put(`/api/blogs/${id}`).send(newData)
+            const response = await api.put(`/api/blogs/${blog.body.id}`).send(newData)
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('token missing or invalid')
+        })
+
+        test('someone else\'s blog returns 401', async () => {
+            const creator = await createTestUser()
+            const blog = await createTestBlog(undefined, creator.token)
+
+            const login = await createTestUser({username: 'anotheruser', name: 'User', password: 'secret'})
+            const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
+            const response = await api.put(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send(newData)
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('token missing or invalid')
+        })
+
+        test('an existing blog with a token works', async () => {
+            const login = await createTestUser()
+            const blog = await createTestBlog(undefined, login.token)
+            const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
+            const response = await api.put(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send(newData)
             expect(response.status).toBe(200)
             expect(response.body.title).toBe(newData.title)
             expect(response.body.author).toBe(newData.author)
             expect(response.body.url).toBe(newData.url)
 
-            const verifyResponse = await api.get(`/api/blogs/${id}`)
+            const verifyResponse = await api.get(`/api/blogs/${blog.body.id}`)
+            expect(verifyResponse.status).toBe(200)
+            console.log(verifyResponse.body);
             expect(verifyResponse.body.title).toBe(response.body.title)
         }),
 
         test('with an invalid id returns status 400', async () => {
+            const login = await createTestUser()
             const newData = {title: 'Blog of Editing', author: 'Editor', url: 'https://www.editedblog.example'}
-            const response = await api.put(`/api/blogs/a`).send(newData)
+            const response = await api.put(`/api/blogs/a`).set('authorization', `Bearer ${login.token}`).send(newData)
             expect(response.status).toBe(400)
         })
 
         test('with invalid data returns status 400', async () => {
-            const id = await blogsHelper.getRandomEntryId()
+            const login = await createTestUser()
+            const blog = await createTestBlog(undefined, login.token)
             const newData = {title: null}
-            const response = await api.put(`/api/blogs/${id}`).send(newData)
+            const response = await api.put(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send(newData)
             expect(response.status).toBe(400)
         })
     })
