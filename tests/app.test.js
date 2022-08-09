@@ -12,6 +12,19 @@ beforeEach(async () => {
     await usersHelper.setInitialState()
 })
 
+const createTestUser = async () => {
+    const userData = {username: 'test_user', name: 'Jest Test', password: 'mypasswordisthis'}
+    await api.post('/api/users').send(userData)
+    const response = await api.post('/api/login').send(userData)
+    const token = response.body.token
+    return {...userData, token}
+}
+
+const createTestBlog = async (blogData={title: 'The History of Testing', url: 'http://www.historyoftesting.example'}, token) => {
+    const newBlog = {...blogData}
+    return await api.post('/api/blogs').set('authorization', `Bearer ${token}`).send(newBlog)
+}
+
 describe('when there are blogs in the database', () => {
     test('GET / returns all blogs as JSON', async () => {
         const response = await api.get('/api/blogs')
@@ -43,10 +56,10 @@ describe('when there are blogs in the database', () => {
     })
 
     describe('adding a blog to the database', () => {
-        test.only('requires a token', async () => {
+        test('requires a token', async () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
 
-            const response = await api.post('/api/blogs').set('authorization', 'bearer not a real token').send(newBlog)
+            const response = await createTestBlog(newBlog, null)
             expect(response.status).toBe(401)
             expect(response.body.error).toBe('invalid token')
         })
@@ -55,7 +68,7 @@ describe('when there are blogs in the database', () => {
             const likes = Math.round(Math.random()*20)
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example', likes: likes}
             
-            const response = await api.post('/api/blogs').send(newBlog)
+            const response = await createTestBlog(newBlog, null)
             expect(response.status).toBe(201)
     
             const getResponse = await api.get('/api/blogs')
@@ -67,7 +80,7 @@ describe('when there are blogs in the database', () => {
             const likes = Math.round(Math.random()*20)
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example', likes: likes}
             
-            const response = await api.post('/api/blogs').send(newBlog)
+            const response = await createTestBlog(newBlog, null)
             expect(response.body.title).toBe(newBlog.title)
             expect(response.body.url).toBe(newBlog.url)
             expect(response.body.likes).toBe(likes)
@@ -75,7 +88,7 @@ describe('when there are blogs in the database', () => {
 
         test('will attach user info to the blog', async () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
-            const response = await api.post('/api/blogs').send(newBlog)
+            const response = await createTestBlog(newBlog, null)
             expect(response.body.user).toBeDefined()
             expect(response.body.user.id).toBeDefined()
             expect(response.body.user.name).toBeDefined()
@@ -85,7 +98,7 @@ describe('when there are blogs in the database', () => {
 
         test('will attach the blog to the user data', async () => {
             const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
-            const response = await api.post('/api/blogs').send(newBlog)
+            const response = await createTestBlog(newBlog, null)
             const user = await api.get(`/api/users/${response.body.user.id}`)
             expect(user.body.blogs).toBeDefined()
             expect(user.body.blogs[0].id).toBeDefined()
@@ -96,7 +109,7 @@ describe('when there are blogs in the database', () => {
             test('likes defaults to 0 likes', async () => {
                 const newBlog = {title: 'The History of Testing', url: 'http://www.historyoftesting.example'}
         
-                const response = await api.post('/api/blogs').send(newBlog)
+                const response = await createTestBlog(newBlog, null)
                 expect(response.body.likes).toBeDefined()
                 expect(response.body.likes).toBe(0)
             })
@@ -118,10 +131,28 @@ describe('when there are blogs in the database', () => {
     })
 
     describe('deleting a blog', () => {
-        test('with a valid id returns status 204', async () => {
-            const id = await blogsHelper.getRandomEntryId()
-            const response = await api.delete(`/api/blogs/${id}`)
+        test.only('without a token returns 401', async () => {
+            const login = await createTestUser()
+            const blog = await createTestBlog(null, login.token)
+            const response = await api.delete(`/api/blogs/${blog.body.id}`)
+            expect(response.status).toBe(401)
+            expect(response.body.error).toBe('invalid token')
+        })
+
+        test.only('with a valid token returns status 204', async () => {
+            const login = await createTestUser()
+            const blog = await createTestBlog(undefined, login.token)
+            const response = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send()
             expect(response.status).toBe(204)
+        })
+
+        test.only('twice returns 204, then 404', async () => {
+            const login = await createTestUser()
+            const blog = await createTestBlog(undefined, login.token)
+            const response1 = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send()
+            expect(response1.status).toBe(204)
+            const response2 = await api.delete(`/api/blogs/${blog.body.id}`).set('authorization', `Bearer ${login.token}`).send()
+            expect(response2.status).toBe(404)
         })
 
         test('with a valid id removes the entry', async () => {
